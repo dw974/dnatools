@@ -134,3 +134,12 @@ make_contigs = function(tab=NULL,outfld=NULL){
   system(paste(c("cat",paste0(tab$folder[which(res==1)],tab$name[which(res==1)],"_contig.fa"), ">",paste0(outfld,"sequences.fasta")),collapse=" "))
 
 }
+
+align_seqs=function(list=NULL,outfld=NULL){
+  tmp=tempfile(tmpdir = outfld)
+  tmp2=tempfile(tmpdir = outfld)
+  system(paste0("cat ",paste(list,collapse=" ")," > ",tmp))
+  system(paste0("mafft --auto --thread 2 --adjustdirectionaccurately ",tmp," > ",tmp2))
+  system(paste0("cp ",tmp2," ",outfld,"/aligned_sequences.fasta"))
+  system(paste0("rm ",tmp," ",tmp2))
+}
