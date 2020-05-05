@@ -26,7 +26,6 @@ extract_region <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL) 
   print(pt)
   pt2=normalizePath(paste0(temp_dir,"/results"),winslash = "\\",mustWork = F)
   print(pt2)
-  Sys.setenv(PATH=paste(Sys.getenv("PATH"),normalizePath("C:/Program Files/NCBI/blast-2.10.0+/bin"),sep=";"))
     system(paste0("makeblastdb -dbtype nucl -input_type fasta -in ",ref," -out ",pt))
     print("Done.")
 
