@@ -18,3 +18,5 @@ biocViews:
     DECIPHER,
     Biostrings
 RoxygenNote: 7.0.2
+Imports: 
+    sangeranalyseR

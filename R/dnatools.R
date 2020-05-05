@@ -106,3 +106,41 @@ write_alleles=function(df=NULL,file.out=NULL){
   write.csv(cor,paste0(dirname(file.out),"allele_correspondence.csv"))
   write.fasta(as.list(un),lapply(1:length(un),function(x) paste0("allele_",x)),file.out)
 }
+
+make_contigs = function(tab=NULL,outfld=NULL){
+
+  tab=read.table(tab,header=T)
+  res=sapply(1:dim(tab)[1],function(x){
+    print(paste0("Attempting to generate contig for sequence ",tab$name[x]," using method M1"))
+    sancon=sangeranalyseR::SangerContig(parentDirectory = tab$folder[x],
+                                        suffixForwardRegExp = tab$forward[x],
+                                        suffixReverseRegExp = tab$reverse[x],
+                                        TrimmingMethod = "M1",
+                                        processorsNum=2,
+                                        contigName = tab$name[x])
+    if(length(sancon@contigSeq)==0){
+      print("Method M1 was NOT SUCCESSFUL")
+      print(paste0("Attempting to generate contig for sequence ",tab$name[x]," using method M2"))
+      sancon=sangeranalyseR::SangerContig(parentDirectory = tab$folder[x],
+                                          suffixForwardRegExp = tab$forward[x],
+                                          suffixReverseRegExp = tab$reverse[x],
+                                          TrimmingMethod = "M2",
+                                          processorsNum=2,
+                                          M1TrimmingCutoff = NULL,
+                                          M2CutoffQualityScore = 20,
+                                          M2SlidingWindowSize = 10,
+                                          contigName = tab$name[x])
+    }
+    if(length(sancon@contigSeq)==0){
+      print("Method M2 was NOT SUCCESSFUL")
+      return(0)
+    }else{
+      print("Writing contig to file")
+      sangeranalyseR::writeFastaSC(sancon,outputDir = tab$folder[x],selection = "contig")
+      return(1)
+    }
+  }
+  )
+  system(paste(c("cat",paste0(tab$folder[which(res==1)],tab$name[which(res==1)],"_contig.fa"), ">",paste0(outfld,"sequences.fasta")),collapse=" "))
+
+}
