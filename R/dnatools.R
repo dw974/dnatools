@@ -39,7 +39,7 @@ extract_region <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL) 
 
       system(paste0("blastn -num_threads 4 -query ",normalizePath(lst[x])," -db ",pt," -outfmt \"6 qaccver saccver pident length mismatch gapopen qstart qend sstart send evalue bitscore qseq sseq\" -out ",pt2))
 
-
+##
     if(file.info(pt2)$size>0){
       tab=read.table(pt2,header=F,stringsAsFactors = F)
       colnames(tab)=c("qaccver", "saccver", "pident", "length", "mismatch", "gapopen", "qstart", "qend", "sstart", "send", "evalue", "bitscore", "qseq", "sseq")
