@@ -111,15 +111,6 @@ make_contigs = function(tab=NULL,outfld=NULL){
 
   tab=read.table(tab,header=T)
   res=sapply(1:dim(tab)[1],function(x){
-    print(paste0("Attempting to generate contig for sequence ",tab$name[x]," using method M1"))
-    sancon=sangeranalyseR::SangerContig(parentDirectory = tab$folder[x],
-                                        suffixForwardRegExp = tab$forward[x],
-                                        suffixReverseRegExp = tab$reverse[x],
-                                        TrimmingMethod = "M1",
-                                        processorsNum=2,
-                                        contigName = tab$name[x])
-    if(length(sancon@contigSeq)==0){
-      print("Method M1 was NOT SUCCESSFUL")
       print(paste0("Attempting to generate contig for sequence ",tab$name[x]," using method M2"))
       sancon=sangeranalyseR::SangerContig(parentDirectory = tab$folder[x],
                                           suffixForwardRegExp = tab$forward[x],
@@ -127,10 +118,9 @@ make_contigs = function(tab=NULL,outfld=NULL){
                                           TrimmingMethod = "M2",
                                           processorsNum=2,
                                           M1TrimmingCutoff = NULL,
-                                          M2CutoffQualityScore = 20,
-                                          M2SlidingWindowSize = 10,
+                                          M2CutoffQualityScore = 40,
+                                          M2SlidingWindowSize = 30,
                                           contigName = tab$name[x])
-    }
     if(length(sancon@contigSeq)==0){
       print("Method M2 was NOT SUCCESSFUL")
       return(0)
