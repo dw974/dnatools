@@ -1,6 +1,6 @@
 Package: dnatools
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Contains useful functions for DNA manipulation
 Version: 0.1.0
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
@@ -13,10 +13,11 @@ Depends:
     seqinr,
     dplyr,
     roxygen2,
-    magrittr
+    magrittr,
+    sangeranalyseR
 biocViews:
     DECIPHER,
     Biostrings
-RoxygenNote: 7.0.2
-Imports: 
-    sangeranalyseR
+RoxygenNote: 7.1.0
+Remotes:
+    roblanf/sangeranalyseR
