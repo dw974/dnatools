@@ -146,9 +146,10 @@ align_seqs=function(list=NULL,outfld=NULL){
 get_dists=function(aln=NULL,fileout=NULL){
   tmp=tempfile()
   system(paste0("snp-dists -b ",aln," > ",tmp))
-  tab=read.table(tmp,header=T)
-  d=as.dist(tab,upper=FALSE)
-  tab=reshape2::melt(d, varnames = c("From", "To"),value.name = "SNPs")
-  write.table(tab,fileout,row.names = F)
+  tab=as.matrix(read.table(tmp,header=T))
+  x=upper.tri(tab,diag=TRUE)
+  tab[x]=NA
+  tab2=reshape2::melt(tab, varnames = c("From", "To"),value.name = "SNPs",na.rm=T)
+  write.table(tab2,fileout,row.names = F)
   return(tab)
 }
