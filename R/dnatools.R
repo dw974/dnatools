@@ -102,7 +102,7 @@ get_source_data=function(ids=NULL){
 write_alleles=function(df=NULL,file.out=NULL){
   un=unique(df$aln)
   cor=data.frame(id=df$id,allele=paste0("allele_",match(df$aln,un)),stringsAsFactors = F)
-  write.csv(cor,paste0(dirname(file.out),"allele_correspondence.csv"))
+  write.table(cor,paste0(dirname(file.out),"/allele_correspondence.csv"),row.names = F)
   write.fasta(as.list(un),lapply(1:length(un),function(x) paste0("allele_",x)),file.out)
 }
 
@@ -147,8 +147,6 @@ get_dists=function(aln=NULL,fileout=NULL){
   tmp=tempfile()
   system(paste0("snp-dists -b ",aln," > ",tmp))
   tab=as.matrix(read.table(tmp,header=T))
-  x=upper.tri(tab,diag=TRUE)
-  tab[x]=NA
   tab2=reshape2::melt(tab, varnames = c("From", "To"),value.name = "SNPs",na.rm=T)
   write.table(tab2,fileout,row.names = F)
   return(tab2)
