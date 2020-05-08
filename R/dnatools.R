@@ -148,7 +148,7 @@ get_dists=function(aln=NULL,fileout=NULL){
   system(paste0("snp-dists -b ",aln," > ",tmp))
   tab=read.table(tmp,header=T)
   d=as.dist(tab,upper=FALSE)
-  tab=melt(as.matrix(d), varnames = c("From", "To"),value.name = "SNPs")
+  tab=reshape2::melt(as.matrix(d), varnames = c("From", "To"),value.name = "SNPs")
   write.table(tab,fileout,row.names = F)
   return(tab)
 }
