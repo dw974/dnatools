@@ -151,5 +151,5 @@ get_dists=function(aln=NULL,fileout=NULL){
   tab[x]=NA
   tab2=reshape2::melt(tab, varnames = c("From", "To"),value.name = "SNPs",na.rm=T)
   write.table(tab2,fileout,row.names = F)
-  return(tab)
+  return(tab2)
 }
