@@ -142,3 +142,13 @@ align_seqs=function(list=NULL,outfld=NULL){
   system(paste0("cp ",tmp2," ",outfld,"/aligned_sequences.fasta"))
   system(paste0("rm ",tmp," ",tmp2))
 }
+
+get_dists=function(aln=NULL,fileout=NULL){
+  tmp=tempfile()
+  system(paste0("snp-dists -b ",aln," > ",tmp))
+  tab=read.table(tmp,header=T)
+  tab=as.data.frame(as.table(as.matrix(tab)))
+  colnames(tab)=c("From","To","SNPs")
+  write.table(tab,fileout,row.names = F)
+  return(tab)
+}
