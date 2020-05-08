@@ -14,7 +14,8 @@ Depends:
     dplyr,
     roxygen2,
     magrittr,
-    sangeranalyseR
+    sangeranalyseR,
+    reshape2
 biocViews:
     DECIPHER,
     Biostrings

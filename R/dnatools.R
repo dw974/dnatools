@@ -147,8 +147,8 @@ get_dists=function(aln=NULL,fileout=NULL){
   tmp=tempfile()
   system(paste0("snp-dists -b ",aln," > ",tmp))
   tab=read.table(tmp,header=T)
-  tab=as.data.frame(as.table(as.matrix(tab)))
-  colnames(tab)=c("From","To","SNPs")
+  d=as.dist(tab,upper=FALSE)
+  tab=melt(as.matrix(d), varnames = c("From", "To"),value.name = "SNPs")
   write.table(tab,fileout,row.names = F)
   return(tab)
 }
