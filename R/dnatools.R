@@ -144,6 +144,7 @@ align_seqs=function(list=NULL,outfld=NULL){
 }
 
 get_dists=function(aln=NULL,fileout=NULL){
+  ##
   tmp=tempfile()
   system(paste0("snp-dists -b ",aln," > ",tmp))
   tab=read.table(tmp,header=T)
