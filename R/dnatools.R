@@ -151,3 +151,10 @@ get_dists=function(aln=NULL,fileout=NULL){
   write.table(tab2,fileout,row.names = F)
   return(tab2)
 }
+
+get_tips=function(tree=NULL){
+  d = fortify(tree)
+  d = subset(d, isTip)
+  tips=rev(with(d, label[order(y, decreasing=T)]))
+  return(tips)
+}
