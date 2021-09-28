@@ -5,7 +5,7 @@
 extract_region <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL) {
   if (is.null(ref)) stop("Please provide a fasta file containing reference sequence data")
   if (is.null(temp_dir)) temp_dir=tempdir()
-
+  #BLAH
   ref=normalizePath(ref)
   temp_dir=normalizePath(temp_dir)
 
