@@ -96,8 +96,10 @@ BLAST_single_ref <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL
                                                                       qseq=qseq[order(evalue,-rank(bitscore))[1]],
                                                                       score=evalue[order(evalue,-rank(bitscore))[1]],
                                                                       length=length[order(evalue,-rank(bitscore))[1]],
-                                                                      start=sstart[order(evalue,-rank(bitscore))[1]],
-                                                                      end=send[order(evalue,-rank(bitscore))[1]],
+                                                                      sstart=sstart[order(evalue,-rank(bitscore))[1]],
+                                                                      send=send[order(evalue,-rank(bitscore))[1]],
+                                                                      qstart=qstart[order(evalue,-rank(bitscore))[1]],
+                                                                      qend=qend[order(evalue,-rank(bitscore))[1]],
                                                                       file=basename(lst[x]))
     }else{
       print(paste0("Sequence ",x," (",basename(lst[x]),") has no BLAST hits"))
@@ -110,6 +112,34 @@ BLAST_single_ref <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL
   return(res)
 }
 
+plot_coverage=function(df=NULL,marker1=NULL,marker2=NULL){
+  dfp=data.frame(pos=1:max(df$end),cov=0)
+  for (x in 1:dim(df)[1]){
+    dfp$cov[df$start[x]:df$end[x]]=dfp$cov[df$start[x]:df$end[x]]+1
+  }
+  ls=c(1,which(diff(dfp$cov)!=0),max(df$end))
+  ltmp=lapply(1:(length(ls)-1),function(x){
+    data.frame(xmin=ls[x],xmax=ls[x+1],ymin=0,ymax=dfp$cov[ls[x+1]])
+  })
+  ltmp=do.call(rbind,ltmp)
+  a=ggplot(ltmp)+geom_rect(aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),fill="lightblue")+
+    geom_rect(xmin=1,xmax=max(df$end),ymin=-700,ymax=-100,fill="grey50")+
+    geom_text(x=max(df$end)/2,y=-450,label="Genome",size=3)+
+    theme_minimal()+
+    ylim(-1200,max(ltmp$ymax)+500)+
+    theme(legend.position="none")+
+    ggtitle("Coverage of different hits")+
+    geom_hline(yintercept = 100,colour="red",linetype="dashed")+
+    geom_hline(yintercept = 300,colour="yellow",linetype="dashed")+
+    geom_hline(yintercept = 1000,colour="green",linetype="dashed")
+  if(!is.null(marker1)){
+    a=a+geom_vline(xintercept=marker1)
+  }
+  if(!is.null(marker2)){
+    a=a+geom_vline(xintercept=marker2)
+  }
+  a
+}
 
 align_df=function(df=NULL,temp_dir=NULL){
   if (is.null(temp_dir)) temp_dir=tempdir()
