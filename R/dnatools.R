@@ -151,9 +151,7 @@ crop_region=function(df=NULL,start=NULL,end=NULL){
 }
 
 align_df=function(df=NULL,temp_dir=NULL){
-  if (is.null(temp_dir)) temp_dir=tempdir()}
-
-
+  if (is.null(temp_dir)) temp_dir=tempdir()
   print("This function aligns the sequences in the output from function extract_region using system calls to mafft.")
   print(paste0("Temporary files will be written to this location: ",temp_dir))
   print("Writing sequence data to disk")
