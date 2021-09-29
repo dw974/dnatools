@@ -113,18 +113,18 @@ BLAST_single_ref <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL
 }
 
 plot_coverage=function(df=NULL,marker1=NULL,marker2=NULL){
-  dfp=data.frame(pos=1:max(df$end),cov=0)
+  dfp=data.frame(pos=1:max(df$send),cov=0)
   for (x in 1:dim(df)[1]){
-    dfp$cov[df$start[x]:df$end[x]]=dfp$cov[df$start[x]:df$end[x]]+1
+    dfp$cov[df$sstart[x]:df$send[x]]=dfp$cov[df$sstart[x]:df$send[x]]+1
   }
-  ls=c(1,which(diff(dfp$cov)!=0),max(df$end))
+  ls=c(1,which(diff(dfp$cov)!=0),max(df$send))
   ltmp=lapply(1:(length(ls)-1),function(x){
     data.frame(xmin=ls[x],xmax=ls[x+1],ymin=0,ymax=dfp$cov[ls[x+1]])
   })
   ltmp=do.call(rbind,ltmp)
   a=ggplot(ltmp)+geom_rect(aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),fill="lightblue")+
-    geom_rect(xmin=1,xmax=max(df$end),ymin=-700,ymax=-100,fill="grey50")+
-    geom_text(x=max(df$end)/2,y=-450,label="Genome",size=3)+
+    geom_rect(xmin=1,xmax=max(df$send),ymin=-700,ymax=-100,fill="grey50")+
+    geom_text(x=max(df$send)/2,y=-450,label="Genome",size=3)+
     theme_minimal()+
     ylim(-1200,max(ltmp$ymax)+500)+
     theme(legend.position="none")+
@@ -141,8 +141,18 @@ plot_coverage=function(df=NULL,marker1=NULL,marker2=NULL){
   a
 }
 
+crop_region=function(df=NULL,start=NULL,end=NULL){
+  df=df[df$send>(end-((end-start)/20)) & df$sstart<(start+((end-start)/20)),]
+  s=df$qstart+(start-df$sstart)
+  s[s<1]=1
+  e=df$qend+(end-df$send)
+  df2=data.frame(qseq=df$qaccver,file=gsub("-","",substr(df$qseq,s,e)))
+  write.fasta(as.list(df2$qseq),as.list(df2$file),"/mnt/14E018410220F1D7/Sequencing_data/Sarah/assemblies/cropped_region.fa")
+}
+
 align_df=function(df=NULL,temp_dir=NULL){
-  if (is.null(temp_dir)) temp_dir=tempdir()
+  if (is.null(temp_dir)) temp_dir=tempdir()}
+
 
   print("This function aligns the sequences in the output from function extract_region using system calls to mafft.")
   print(paste0("Temporary files will be written to this location: ",temp_dir))
