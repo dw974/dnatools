@@ -53,7 +53,7 @@ extract_region <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL) 
   return(res)
 }
 
-BLAST_single_ref <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL) {
+BLAST_single_ref <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL,ident_thresh=NULL) {
   if (is.null(ref)) stop("Please provide a fasta file containing reference sequence data")
   if (is.null(temp_dir)) temp_dir=tempdir()
   ref=normalizePath(ref)
@@ -100,6 +100,7 @@ BLAST_single_ref <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL
                                                                       send=send[order(evalue,-rank(bitscore))[1]],
                                                                       qstart=qstart[order(evalue,-rank(bitscore))[1]],
                                                                       qend=qend[order(evalue,-rank(bitscore))[1]],
+                                                                      pident=pident[order(evalue,-rank(bitscore))[1]],
                                                                       file=basename(lst[x]))
     }else{
       print(paste0("Sequence ",x," (",basename(lst[x]),") has no BLAST hits"))
@@ -108,6 +109,9 @@ BLAST_single_ref <- function(ref=NULL,qry_fld=NULL,temp_dir=NULL,len_thresh=NULL
   res=do.call(rbind,res)
   if(!is.null(len_thresh)){
     res=res[res$length>len_thresh,]
+  }
+  if(!is.null(ident_thresh)){
+    res=res[res$pident>=ident_thresh,]
   }
   return(res)
 }
