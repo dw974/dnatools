@@ -173,7 +173,7 @@ get_source_data=function(ids=NULL){
     print(paste0(y," of ",length(ids)))
     URL=paste0("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=",ids[y],"&rettype=gb&retmode=text")
     data <- tryCatch(scan(file = URL, what = "", sep = "\n", quiet = TRUE),error=function(cond){NA},warning=function(cond){NA})
-    if(!is.na(data)){
+    if(!any(is.na(data))){
     pos1=which(unlist(sapply(1:length(data),function(x) length(grep("     source",data[x]))==1)))+1
     pos2=which(unlist(sapply(1:length(data),function(x) length(grep("                     ",data[x]))==0)) & sapply(1:length(data),function(x) x>pos1))[1]-1
     tmp=lapply(pos1:pos2,function(x){
@@ -183,7 +183,7 @@ get_source_data=function(ids=NULL){
       return(dftmp)
 
     })
-    return(cbind(data.frame(id=ids[y],stringsAsFactors = F),bind_cols(tmp)))
+    return(cbind(data.frame(id=ids[y],stringsAsFactors = F),bind_cols(tmp[!is.na(unlist(tmp))])))
   }else{
     return(data.frame(id=ids[y],stringsAsFactors = F))
   }
