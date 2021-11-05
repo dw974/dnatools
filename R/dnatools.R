@@ -130,7 +130,7 @@ plot_coverage=function(df=NULL,marker1=NULL,marker2=NULL){
     geom_rect(xmin=1,xmax=max(df$send),ymin=-700,ymax=-100,fill="grey50")+
     geom_text(x=max(df$send)/2,y=-450,label="Genome",size=3)+
     theme_minimal()+
-    ylim(-1200,max(ltmp$ymax)+500)+
+    ylim(-1200,max(ltmp$ymax)*1.5)+
     theme(legend.position="none")+
     ggtitle("Coverage of different hits")+
     geom_hline(yintercept = 100,colour="red",linetype="dashed")+
@@ -145,13 +145,40 @@ plot_coverage=function(df=NULL,marker1=NULL,marker2=NULL){
   a
 }
 
-crop_region=function(df=NULL,start=NULL,end=NULL){
-  df=df[df$send>(end-((end-start)/20)) & df$sstart<(start+((end-start)/20)),]
+plot_similarity=function(df=NULL,marker1=NULL){
+  a=ggplot(df,aes(x=pident))+geom_histogram(bins=100)
+  if(!is.null(marker1)){
+    a=a+geom_vline(xintercept = marker1)
+  }
+  a
+}
+
+crop_region=function(df=NULL,start=NULL,end=NULL,len_thresh=90,ref=NULL){
+  df=df[df$send>(end-((end-start)*((100-len_thresh)/200))) & df$sstart<(start+((end-start)*((100-len_thresh)/200))),]
   s=df$qstart+(start-df$sstart)
   s[s<1]=1
   e=df$qend+(end-df$send)
-  df2=data.frame(qseq=df$qaccver,file=gsub("-","",substr(df$qseq,s,e)))
-  write.fasta(as.list(df2$qseq),as.list(df2$file),"/mnt/14E018410220F1D7/Sequencing_data/Sarah/assemblies/cropped_region.fa")
+  df2=data.frame(file=df$qaccver,qseq=gsub("-","",substr(df$qseq,s,e)))
+  td=tempdir()
+  dir.create(paste0(td,"/tmp_seq/"))
+  write.fasta(sequences = as.list(df2$qseq),names = as.list(df2$file),file.out = paste0(td,"/tmp_seq/cropped_sequences.fasta"))
+  df=BLAST_single_ref(ref=ref,qry_fld= paste0(td,"/tmp_seq/"))
+  system(paste0("rm -r ",td,"/tmp_seq/"))
+  return(df)
+}
+
+crop_similarity=function(df=NULL,pident_thresh=NULL,keep_outgroup=T){
+  if(keep_outgroup){
+    wch=which(df$pident<pident_thresh)
+    og=which(df$pident==max(df$pident[wch]))[1]
+    print("Sequence used as outgroup:")
+    print(df$qaccver[og])
+    ls=c(og,which(df$pident>pident_thresh))
+  } else {
+    ls=which(df$pident>pident_thresh)
+  }
+  df=df[ls,]
+  return(df)
 }
 
 align_df=function(df=NULL,temp_dir=NULL){
@@ -162,9 +189,11 @@ align_df=function(df=NULL,temp_dir=NULL){
   seqinr::write.fasta(sequences = as.list(gsub("-| ","",df$qseq)),names = as.list(df$file),file.out = paste0(temp_dir,"/aln.fasta"),open="w")
   print("Calling mafft")
   setwd(temp_dir)
-  print(paste0("mafft --adjustdirection --thread 4 aln.fasta > aln2.fasta"))
-  system(paste0("mafft --adjustdirection --thread 4 aln.fasta > aln2.fasta"),intern=T)
+  print(paste0("mafft --adjustdirection --thread 10 aln.fasta > aln2.fasta"))
+  system(paste0("mafft --adjustdirection --thread 10 aln.fasta > aln2.fasta"),intern=T)
   dna=Biostrings::readDNAStringSet("aln2.fasta")
+  print("Masking Alignment")
+  dna=DNAStringSet(MaskAlignment(dna,includeTerminalGaps = T))
   df=data.frame(file=names(dna),id=df$qaccver,aln=paste(dna))
   un=unique(df$aln)
   df$allele=match(df$aln,un)
@@ -202,6 +231,17 @@ write_alleles=function(df=NULL,file.out=NULL){
   cor=data.frame(id=df$id,allele=paste0("allele_",match(df$aln,un)),stringsAsFactors = F)
   write.table(cor,paste0(dirname(file.out),"/allele_correspondence.csv"),row.names = F)
   write.fasta(as.list(un),lapply(1:length(un),function(x) paste0("allele_",x)),file.out)
+}
+
+make_tree=function(df=NULL,dir_out=NULL,outgroup=NULL){
+  dna=DNAStringSet(df$aln)
+  names(dna)=df$id
+  tf=tempfile(fileext = ".fa")
+  dna=DNAStringSet(MaskAlignment(dna,includeTerminalGaps = T))
+  writeXStringSet(dna,paste0(dir_out,"/alignment_for_tree.fa"),format="fasta")
+  system(paste0("iqtree -T AUTO -o ",outgroup," -s ",dir_out, "/",tf))
+  tree=read.tree(paste0(dir_out, "/",".treefile"))
+  return(tree)
 }
 
 make_contigs = function(tab=NULL,outfld=NULL){
